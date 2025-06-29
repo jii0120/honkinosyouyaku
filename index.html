@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>構造式から答える生薬クイズ</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .quiz-item { margin-bottom: 30px; }
+    img { max-width: 200px; display: block; margin-bottom: 10px; }
+    label { display: block; margin-top: 5px; }
+    input[type="text"] { width: 100%; padding: 5px; }
+    .result { margin-top: 10px; font-weight: bold; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+  </style>
+</head>
+<body>
+  <h1>構造式クイズ：生薬名・使用部位・成分名を答えよう！</h1>
+
+  <form id="quizForm"></form>
+
+  <button onclick="gradeQuiz()">採点する</button>
+  <div id="score" style="margin-top: 20px; font-size: 1.2em;"></div>
+
+  <script>
+    const quizData = [
+{ image: "リモネン.png", herb: "キジツ・チンピ・トウヒ", part: "未熟果実(キジツ)/成熟果皮(チンピ・トウヒ)", component: "d-リモネン" },
+{ image: "メントール.png", herb: "ハッカ", part: "地上部", component: "(-)-メントール" },
+{ image: "ロガニン.png", herb: "ゲンチアナ", part: "根と根茎", component: "ロガニン" },
+{ image: "ゲニポシド.png", herb: "サンシシ", part: "果実", component: "ゲニポシド" },
+{ image: "カタルポシド.png", herb: "キササゲ", part: "果実", component: "カタルポシド" },
+{ image: "ゲンチオピクロシド.png", herb: "ゲンチアナ・リュウタン", part: "根と根茎", component: "ゲンチオピクロシド" },
+{ image: "チモール.png", herb: "タイム", part: "花期の全草地上部", component: "チモール" },
+{ image: "リグスチリド.png", herb: "トウキ・センキュウ", part: "根/根茎", component: "リグスチリド" },
+{ image: "クニジリド.png", herb: "センキュウ", part: "根茎", component: "クニジリド" },
+{ image: "オイデスモール.png", herb: "ソウジュツ", part: "根茎", component: "β-オイデスモール" },
+{ image: "ヒネソール.png", herb: "", part: "", component: "ヒネソール" },
+{ image: "アトラクチロン.png", herb: "ビャクジュツ", part: "根茎", component: "アトラクチロン" },
+{ image: "ギンセノシド.png", herb: "コウジン・ニンジン", part: "根", component: "ギンセノシドRg1" },
+{ image: "オンジサポニン.png", herb: "オンジ", part: "根", component: "オンジサポニンE" },
+{ image: "グリチルリチン酸.png", herb: "カンゾウ", part: "根", component: "グリチルリチン酸" },
+{ image: "サイコサポニン類.png", herb: "サイコ", part: "根", component: "サイコサポニン類" },
+{ image: "プラチコジン.png", herb: "キキョウ", part: "根", component: "プラチコジンA" },
+{ image: "バルバロイン.png", herb: "アロエ", part: "葉から得た葉汁を乾燥したもの", component: "バルバロイン" },
+{ image: "パクリタキセル.png", herb: "イチイ", part: "古木の樹皮/若い枝・葉", component: "パクリタキセル" },
+{ image: "ジジプスサポニン.png", herb: "タイソウ", part: "果実", component: "ジジプスサポニンⅠ" },
+{ image: "シコニン.png", herb: "シコン", part: "根", component: "シコニン" },
+{ image: "ケリン.png", herb: "アンミ", part: "果実", component: "ケリン" },
+{ image: "ゲンチジン.png", herb: "ゲンチアナ・リュウタン・センブリ", part: "②根と根茎/①開花期の全草", component: "ゲンチジン" },
+{ image: "カーサミン.png", herb: "コウカ", part: "管状花", component: "カーサミン" },
+{ image: "サフロミン.png", herb: "", part: "", component: "サフロミンA" },
+{ image: "マルチフロリン.png", herb: "エイジツ", part: "偽果又は果実", component: "マルチフロリンA" },
+ { image: "スウェルチアマリン.png", herb: "センブリ", part: "開花期の全草", component: "スウェルチアマリン" },
+  { image: "ショウノウ.png", herb: "ショウノウ", part: "精油", component: "(+)-ショウノウ" },
+  { image: "シンナムアルデヒド.png", herb: "ケイヒ", part: "樹皮", component: "シンナムアルデヒド" },
+  { image: "アネトール.png", herb: "ウイキョウ", part: "果実", component: "アネトール" },
+  { image: "ペオニフロリン.png", herb: "シャクヤク・ボタンピ", part: "根/根皮", component: "ペオニフロリン" },
+  { image: "ペオノール.png", herb: "ボタンピ", part: "根皮", component: "ペオノール" },
+  { image: "デオキシコール酸.png", herb: "ゴオウ・ユウタン", part: "胆嚢", component: "デオキシコール酸" },
+  { image: "エルゴステロール.png", herb: "チョレイ", part: "菌核", component: "エルゴステロール" },
+  { image: "エブリコ酸.png", herb: "ブクリョウ", part: "菌核", component: "エブリコ酸" },
+  { image: "ジオスゲニン.png", herb: "サンヤク", part: "根茎", component: "ジオスゲニン" },
+  { image: "アケボシド類.png", herb: "モクツウ", part: "茎", component: "アケボシド類" },
+  { image: "ブファリン.png", herb: "センソ", part: "毒腺の分泌物", component: "ブファリン" },
+  { image: "ジギトキシン.png", herb: "ジギタリス", part: "葉柄", component: "ジギトキシン" },
+  { image: "G-ストロファンチン.png", herb: "ストロファンツス", part: "種子", component: "G-ストロファンチン" },
+  { image: "ギンコリド.png", herb: "イチョウ", part: "葉及び茎", component: "ギンコリドA" },
+  { image: "アストラガロシド類.png", herb: "オウギ", part: "根", component: "アストラガロシド類Ⅰ" },
+  { image: "ジクマロール.png", herb: "ムラサキウマゴヤシ", part: "葉及び茎", component: "ジクマロール" },
+  { image: "プエラリン.png", herb: "カッコン", part: "根", component: "プエラリン" },
+  { image: "バイカリン.png", herb: "オウゴン", part: "根", component: "バイカリン" },
+  { image: "ソホラジン.png", herb: "サンズコン", part: "根", component: "ソホラジン" },
+  { image: "ヘスペリジン.png", herb: "キジツ・チンピ・トウヒ", part: "未熟果実(キジツ)/成熟果皮(チンピ・トウヒ)", component: "ヘスペリジン" },
+  { image: "ピレトリン.png", herb: "シロバナムシヨケギク", part: "不明(花?)", component: "ピレトリンⅠ" },
+  { image: "センノシド.png", herb: "センナ", part: "小葉", component: "センノシドA" }
+ ];
+
+    // ランダムシャッフル関数
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    const shuffledData = shuffle([...quizData]);
+    const form = document.getElementById('quizForm');
+
+    shuffledData.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'quiz-item';
+      div.innerHTML = `
+        <img src="images/${item.image}" alt="構造式">
+        <label>生薬名: <input type="text" name="herb${i}"></label>
+        <label>利用部位: <input type="text" name="part${i}"></label>
+        <label>成分名: <input type="text" name="component${i}"></label>
+        <div class="result" id="result${i}"></div>
+      `;
+      form.appendChild(div);
+    });
+
+    function gradeQuiz() {
+      let score = 0;
+      shuffledData.forEach((item, i) => {
+        const herb = document.querySelector(`[name='herb${i}']`).value.trim();
+        const part = document.querySelector(`[name='part${i}']`).value.trim();
+        const component = document.querySelector(`[name='component${i}']`).value.trim();
+
+        const correctHerb = item.herb;
+        const correctPart = item.part;
+        const correctComponent = item.component;
+
+        let result = "";
+        let correctCount = 0;
+
+        if (herb === correctHerb) {
+          result += `<div class='correct'>生薬名：正解</div>`;
+          correctCount++;
+        } else {
+          result += `<div class='incorrect'>生薬名：×（正：${correctHerb}）</div>`;
+        }
+
+        if (part === correctPart) {
+          result += `<div class='correct'>利用部位：正解</div>`;
+          correctCount++;
+        } else {
+          result += `<div class='incorrect'>利用部位：×（正：${correctPart}）</div>`;
+        }
+
+        if (component === correctComponent) {
+          result += `<div class='correct'>成分名：正解</div>`;
+          correctCount++;
+        } else {
+          result += `<div class='incorrect'>成分名：×（正：${correctComponent}）</div>`;
+        }
+
+        score += correctCount;
+        document.getElementById(`result${i}`).innerHTML = result;
+      });
+
+      document.getElementById('score').innerText = `あなたの得点は ${score} / ${shuffledData.length * 3} 点です。`;
+    }
+  </script>
+</body>
+</html>
